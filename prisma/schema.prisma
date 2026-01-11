@@ -1,0 +1,115 @@
+// Prisma Schema for Next.js + PostgreSQL Reference Application
+// 블로그 플랫폼 구조로 다양한 쿼리 유형 시연
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// 1. User - 사용자 (기본 CRUD 시연)
+model User {
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  name      String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  posts     Post[]
+  comments  Comment[]
+
+  @@index([email])
+}
+
+// 2. Category - 카테고리 (1:N 관계, GROUP BY 시연)
+model Category {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+
+  posts Post[]
+}
+
+// 3. Post - 게시글 (관계형 쿼리, 필터링, 정렬 시연)
+model Post {
+  id         Int       @id @default(autoincrement())
+  title      String
+  content    String
+  published  Boolean   @default(false)
+  viewCount  Int       @default(0)
+  authorId   Int
+  categoryId Int
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  author     User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  category   Category     @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  comments   Comment[]
+  postTags   PostTag[]
+  metadata   PostMetadata?
+
+  @@index([authorId])
+  @@index([categoryId])
+  @@index([published])
+  @@index([createdAt])
+}
+
+// 4. Comment - 댓글 (자기참조 관계, 중첩 쿼리 시연)
+model Comment {
+  id        Int       @id @default(autoincrement())
+  content   String
+  postId    Int
+  authorId  Int
+  parentId  Int?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  post      Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author    User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parent    Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   Comment[] @relation("CommentReplies")
+
+  @@index([postId])
+  @@index([authorId])
+  @@index([parentId])
+}
+
+// 5. Tag - 태그 (N:M 관계 시연)
+model Tag {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+  createdAt DateTime  @default(now())
+
+  postTags  PostTag[]
+}
+
+// 6. PostTag - 게시글-태그 조인 테이블 (명시적 N:M 관계 시연)
+model PostTag {
+  postId    Int
+  tagId     Int
+  createdAt DateTime @default(now())
+
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tag       Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([postId, tagId])
+  @@index([postId])
+  @@index([tagId])
+}
+
+// 7. PostMetadata - 메타데이터 (JSONB, 배열 시연 - PostgreSQL 특화 기능)
+model PostMetadata {
+  id           Int      @id @default(autoincrement())
+  postId       Int      @unique
+  metadata     Json     // JSONB: 읽기 시간, SEO 데이터, 커스텀 필드 등
+  keywords     String[] // 배열: 키워드 목록
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  post         Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([postId])
+}
