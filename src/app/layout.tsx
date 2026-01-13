@@ -34,15 +34,39 @@ export default function RootLayout({
               <Link href="/" className="text-xl font-bold hover:text-blue-200 transition">
                 Prisma 레퍼런스
               </Link>
-              <div className="flex gap-6">
+              <div className="hidden md:flex gap-6 items-center">
                 <Link href="/prisma-queries" className="hover:text-blue-200 transition">
                   Prisma 쿼리
+                </Link>
+                <Link href="/prisma-includes" className="hover:text-blue-200 transition">
+                  Include 가이드
+                </Link>
+                <Link href="/database-relationships" className="hover:text-blue-200 transition">
+                  테이블 관계
+                </Link>
+                <Link href="/api-patterns" className="hover:text-blue-200 transition">
+                  API 패턴
+                </Link>
+                <Link href="/advanced-queries" className="hover:text-blue-200 transition">
+                  고급 쿼리
                 </Link>
                 <Link href="/native-queries" className="hover:text-blue-200 transition">
                   Native 쿼리
                 </Link>
+                <Link href="/common-pitfalls" className="hover:text-blue-200 transition">
+                  자주하는 실수
+                </Link>
+                <Link href="/performance-tips" className="hover:text-blue-200 transition">
+                  성능 팁
+                </Link>
                 <Link href="/reference" className="hover:text-blue-200 transition">
                   참조 가이드
+                </Link>
+              </div>
+              {/* Mobile: Show simplified menu */}
+              <div className="md:hidden text-sm">
+                <Link href="/reference" className="hover:text-blue-200 transition">
+                  전체 메뉴 →
                 </Link>
               </div>
             </div>

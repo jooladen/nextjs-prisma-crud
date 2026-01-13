@@ -31,6 +31,25 @@ export default function PrismaQueriesPage() {
     search: '',
   });
 
+  // 카테고리 폼 상태
+  const [newCategory, setNewCategory] = useState({
+    name: '',
+    description: ''
+  });
+  const [categoriesData, setCategoriesData] = useState<any>(null);
+
+  // 태그 폼 상태
+  const [newTag, setNewTag] = useState({ name: '' });
+  const [tagsData, setTagsData] = useState<any>(null);
+
+  // 댓글 폼 상태
+  const [newComment, setNewComment] = useState({
+    content: '',
+    postId: '',
+    authorId: ''
+  });
+  const [commentsData, setCommentsData] = useState<any>(null);
+
   // 사용자 전체 조회
   const fetchUsers = async () => {
     setLoading('users');
@@ -120,6 +139,133 @@ export default function PrismaQueriesPage() {
         fetchPosts(); // 목록 새로고침
       } else {
         setError(data.error || '게시글 생성 실패');
+      }
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading('');
+    }
+  };
+
+  // 카테고리 전체 조회
+  const fetchCategories = async () => {
+    setLoading('categories');
+    setError('');
+    try {
+      const response = await fetch('/api/prisma/categories');
+      const data: ApiResponse = await response.json();
+      setCategoriesData(data);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading('');
+    }
+  };
+
+  // 카테고리 생성
+  const createCategory = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading('create-category');
+    setError('');
+    try {
+      const response = await fetch('/api/prisma/categories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newCategory),
+      });
+      const data: ApiResponse = await response.json();
+      if (data.success) {
+        alert('카테고리가 생성되었습니다!');
+        setNewCategory({ name: '', description: '' });
+        fetchCategories(); // 목록 새로고침
+      } else {
+        setError(data.error || '카테고리 생성 실패');
+      }
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading('');
+    }
+  };
+
+  // 태그 전체 조회
+  const fetchTags = async () => {
+    setLoading('tags');
+    setError('');
+    try {
+      const response = await fetch('/api/prisma/tags');
+      const data: ApiResponse = await response.json();
+      setTagsData(data);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading('');
+    }
+  };
+
+  // 태그 생성
+  const createTag = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading('create-tag');
+    setError('');
+    try {
+      const response = await fetch('/api/prisma/tags', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newTag),
+      });
+      const data: ApiResponse = await response.json();
+      if (data.success) {
+        alert('태그가 생성되었습니다!');
+        setNewTag({ name: '' });
+        fetchTags(); // 목록 새로고침
+      } else {
+        setError(data.error || '태그 생성 실패');
+      }
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading('');
+    }
+  };
+
+  // 댓글 전체 조회
+  const fetchComments = async () => {
+    setLoading('comments');
+    setError('');
+    try {
+      const response = await fetch('/api/prisma/comments');
+      const data: ApiResponse = await response.json();
+      setCommentsData(data);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading('');
+    }
+  };
+
+  // 댓글 생성
+  const createComment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading('create-comment');
+    setError('');
+    try {
+      const response = await fetch('/api/prisma/comments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...newComment,
+          postId: parseInt(newComment.postId),
+          authorId: parseInt(newComment.authorId),
+        }),
+      });
+      const data: ApiResponse = await response.json();
+      if (data.success) {
+        alert('댓글이 생성되었습니다!');
+        setNewComment({ content: '', postId: '', authorId: '' });
+        fetchComments(); // 목록 새로고침
+      } else {
+        setError(data.error || '댓글 생성 실패');
       }
     } catch (err: any) {
       setError(err.message);
@@ -370,6 +516,217 @@ export default function PrismaQueriesPage() {
               {loading === 'create-post' ? '생성 중...' : '게시글 생성'}
             </button>
           </form>
+        </div>
+      </section>
+
+      {/* 카테고리(Categories) 섹션 */}
+      <section className="mb-12">
+        <h2 className="text-3xl font-bold mb-6 text-gray-900">카테고리 관리 (Categories)</h2>
+
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* 카테고리 조회 */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h3 className="text-xl font-semibold mb-4 text-blue-600">카테고리 전체 조회</h3>
+            <button
+              onClick={fetchCategories}
+              disabled={loading === 'categories'}
+              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 transition"
+            >
+              {loading === 'categories' ? '조회 중...' : '카테고리 조회'}
+            </button>
+
+            {categoriesData && (
+              <div className="mt-4">
+                <p className="text-sm text-gray-600 mb-2">
+                  결과: {categoriesData.success ? '성공' : '실패'}
+                </p>
+                <pre className="bg-gray-100 p-4 rounded text-sm overflow-auto max-h-96">
+                  {JSON.stringify(categoriesData, null, 2)}
+                </pre>
+              </div>
+            )}
+          </div>
+
+          {/* 카테고리 생성 */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h3 className="text-xl font-semibold mb-4 text-blue-600">카테고리 생성</h3>
+            <form onSubmit={createCategory} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  카테고리 이름 *
+                </label>
+                <input
+                  type="text"
+                  value={newCategory.name}
+                  onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value })}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  placeholder="개발, 디자인, 라이프스타일 등"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  설명 (선택)
+                </label>
+                <textarea
+                  value={newCategory.description}
+                  onChange={(e) => setNewCategory({ ...newCategory, description: e.target.value })}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  placeholder="카테고리 설명을 입력하세요"
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={loading === 'create-category'}
+                className="w-full bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 disabled:bg-gray-400 transition"
+              >
+                {loading === 'create-category' ? '생성 중...' : '카테고리 생성'}
+              </button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      {/* 태그(Tags) 섹션 */}
+      <section className="mb-12">
+        <h2 className="text-3xl font-bold mb-6 text-gray-900">태그 관리 (Tags)</h2>
+
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* 태그 조회 */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h3 className="text-xl font-semibold mb-4 text-blue-600">태그 전체 조회</h3>
+            <button
+              onClick={fetchTags}
+              disabled={loading === 'tags'}
+              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 transition"
+            >
+              {loading === 'tags' ? '조회 중...' : '태그 조회'}
+            </button>
+
+            {tagsData && (
+              <div className="mt-4">
+                <p className="text-sm text-gray-600 mb-2">
+                  결과: {tagsData.success ? '성공' : '실패'}
+                </p>
+                <pre className="bg-gray-100 p-4 rounded text-sm overflow-auto max-h-96">
+                  {JSON.stringify(tagsData, null, 2)}
+                </pre>
+              </div>
+            )}
+          </div>
+
+          {/* 태그 생성 */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h3 className="text-xl font-semibold mb-4 text-blue-600">태그 생성</h3>
+            <form onSubmit={createTag} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  태그 이름 *
+                </label>
+                <input
+                  type="text"
+                  value={newTag.name}
+                  onChange={(e) => setNewTag({ ...newTag, name: e.target.value })}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  placeholder="TypeScript, React, Prisma 등"
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={loading === 'create-tag'}
+                className="w-full bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 disabled:bg-gray-400 transition"
+              >
+                {loading === 'create-tag' ? '생성 중...' : '태그 생성'}
+              </button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      {/* 댓글(Comments) 섹션 */}
+      <section>
+        <h2 className="text-3xl font-bold mb-6 text-gray-900">댓글 관리 (Comments)</h2>
+
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* 댓글 조회 */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h3 className="text-xl font-semibold mb-4 text-blue-600">댓글 전체 조회</h3>
+            <button
+              onClick={fetchComments}
+              disabled={loading === 'comments'}
+              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 transition"
+            >
+              {loading === 'comments' ? '조회 중...' : '댓글 조회'}
+            </button>
+
+            {commentsData && (
+              <div className="mt-4">
+                <p className="text-sm text-gray-600 mb-2">
+                  결과: {commentsData.success ? '성공' : '실패'}
+                </p>
+                <pre className="bg-gray-100 p-4 rounded text-sm overflow-auto max-h-96">
+                  {JSON.stringify(commentsData, null, 2)}
+                </pre>
+              </div>
+            )}
+          </div>
+
+          {/* 댓글 생성 */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h3 className="text-xl font-semibold mb-4 text-blue-600">댓글 생성</h3>
+            <form onSubmit={createComment} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  댓글 내용 *
+                </label>
+                <textarea
+                  value={newComment.content}
+                  onChange={(e) => setNewComment({ ...newComment, content: e.target.value })}
+                  required
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  placeholder="댓글 내용을 입력하세요"
+                />
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    게시글 ID *
+                  </label>
+                  <input
+                    type="number"
+                    value={newComment.postId}
+                    onChange={(e) => setNewComment({ ...newComment, postId: e.target.value })}
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    placeholder="1"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    작성자 ID *
+                  </label>
+                  <input
+                    type="number"
+                    value={newComment.authorId}
+                    onChange={(e) => setNewComment({ ...newComment, authorId: e.target.value })}
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    placeholder="1"
+                  />
+                </div>
+              </div>
+              <button
+                type="submit"
+                disabled={loading === 'create-comment'}
+                className="w-full bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 disabled:bg-gray-400 transition"
+              >
+                {loading === 'create-comment' ? '생성 중...' : '댓글 생성'}
+              </button>
+            </form>
+          </div>
         </div>
       </section>
     </div>
