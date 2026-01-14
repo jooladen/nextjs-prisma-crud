@@ -4,24 +4,26 @@ import { ApiResponse } from '@/types/api-responses';
 
 /**
  * GET /api/prisma/comments?postId=1
- * 특정 게시글의 댓글 조회 (대댓글 포함)
- * Query parameter로 postId를 받음
+ * 댓글 조회
+ * - postId가 있으면: 특정 게시글의 댓글 조회 (대댓글 포함)
+ * - postId가 없으면: 모든 댓글 조회
  */
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
     const postId = searchParams.get('postId');
 
+    // postId가 없으면 모든 댓글 반환
     if (!postId) {
-      return NextResponse.json<ApiResponse>(
-        {
-          success: false,
-          error: 'postId query parameter is required',
-        },
-        { status: 400 }
-      );
+      const comments = await commentService.findAll();
+      return NextResponse.json<ApiResponse>({
+        success: true,
+        data: comments,
+        message: 'All comments retrieved successfully',
+      });
     }
 
+    // postId가 있으면 해당 게시글의 댓글만 반환
     const postIdNum = parseInt(postId);
 
     if (isNaN(postIdNum)) {

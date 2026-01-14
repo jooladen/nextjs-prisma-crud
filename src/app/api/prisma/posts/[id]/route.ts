@@ -8,9 +8,10 @@ import { ApiResponse } from '@/types/api-responses';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  props: { params: Promise<{ id: string }> }
 ) {
   try {
+    const params = await props.params;
     const id = parseInt(params.id);
 
     if (isNaN(id)) {
@@ -56,9 +57,10 @@ export async function GET(
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  props: { params: Promise<{ id: string }> }
 ) {
   try {
+    const params = await props.params;
     const id = parseInt(params.id);
 
     if (isNaN(id)) {
@@ -96,9 +98,10 @@ export async function PUT(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  props: { params: Promise<{ id: string }> }
 ) {
   try {
+    const params = await props.params;
     const id = parseInt(params.id);
 
     if (isNaN(id)) {
